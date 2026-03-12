@@ -15,7 +15,7 @@ export default function Quizzes() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState(0);
 
-  // ✅ LOAD QUIZ FROM FIREBASE
+  // LOAD QUIZ
   useEffect(() => {
     const fetchQuizzes = async () => {
       const ref = doc(db, "appdata", "allQuizes");

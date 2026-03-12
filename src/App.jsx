@@ -8,7 +8,6 @@ import Users from './pages/Users.jsx';
 import AddUser from './pages/AddUser.jsx';
 import Management from './pages/Management.jsx';
 import DashHero from './pages/DashHero.jsx';
-import Error from './pages/Error.jsx';
 import Home from './pages/Home.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Register from './pages/Register.jsx';
@@ -42,7 +41,7 @@ export default function App() {
 
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard-login" element={<AdminLogin />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
 
         <Route path="/quizzes" element={<ProtectedUserRoute><Quizzes /></ProtectedUserRoute>} />
         <Route path="/leaderboard" element={<ProtectedUserRoute><Leaderboard /></ProtectedUserRoute>} />
@@ -52,12 +51,10 @@ export default function App() {
           <Route path="users" element={<Users />} />
           <Route path="adduser" element={<AddUser />} />
           <Route path="updateuser/:id" element={<UpdateUser />} />
-          <Route path="management" element={<Management />} />
           <Route path="addquiz" element={<AddQuiz />} />
           <Route path="showquiz" element={<ShowQuiz />} />
         </Route>
 
-        <Route path="*" element={<Error />} />
       </Routes>
     </>
   );

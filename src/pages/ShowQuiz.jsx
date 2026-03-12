@@ -6,7 +6,7 @@ export default function ShowQuiz() {
   const [quizes, setQuizes] = useState({});
   const [editData, setEditData] = useState(null);
 
-  // LOAD QUIZES FROM FIREBASE
+  // LOAD QUIZES 
   useEffect(() => {
     const fetchQuizes = async () => {
       const ref = doc(db, "appdata", "allQuizes");
@@ -26,7 +26,7 @@ export default function ShowQuiz() {
 
     updated[category].splice(index, 1);
 
-    // remove category if empty
+    // remove if empty
     if (updated[category].length === 0) {
       delete updated[category];
     }

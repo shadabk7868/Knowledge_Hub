@@ -1,38 +1,3 @@
-// import React, { useEffect, useState } from 'react'
-// import { useParams, useNavigate } from 'react-router-dom'
-
-// export default function Updateuser() {
-//   let { id } = useParams()
-//   let nav = useNavigate()
-//   let [email, setEmail] = useState("")
-//   let [password, setPassword] = useState("")
-
-//   useEffect(() => {
-//     let users = JSON.parse(localStorage.getItem("allusers"))
-//     setEmail(users[id].email)
-//     setPassword(users[id].password)
-//   }, [])
-
-//   const updateHandler = (e) => {
-//     e.preventDefault()
-//     let users = JSON.parse(localStorage.getItem("allusers"))
-//     users[id] = { email, password }
-//     localStorage.setItem("allusers", JSON.stringify(users))
-//     nav("/dashboard/users")
-//   }
-
-//   return (
-//     <form onSubmit={updateHandler}>
-//       <h3>Update User</h3>
-//       <input className="form-control mb-2" value={email}
-//         onChange={(e)=>setEmail(e.target.value)} />
-//       <input className="form-control mb-2" value={password}
-//         onChange={(e)=>setPassword(e.target.value)} />
-//       <button className="btn btn-primary">Update</button>
-//     </form>
-//   )
-// }
-// UpdateUser.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 

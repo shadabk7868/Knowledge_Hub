@@ -6,12 +6,12 @@ export default function Dashboard() {
 
   const logout = () => {
     localStorage.removeItem("adminLoggedIn");
-    navigate("/dashboard-login", { replace: true });
+    navigate("/admin-login", { replace: true });
   };
 
   return (
     <>
-      {/* Navbar for Admin */}
+      {/* Navbar */}
       <nav className="navbar navbar-dark bg-dark px-4">
         <span className="navbar-brand fw-bold">Admin Panel</span>
         <button className="btn btn-outline-light btn-sm" onClick={logout}>

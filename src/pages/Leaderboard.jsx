@@ -7,7 +7,6 @@ export default function Leaderboard() {
     JSON.parse(localStorage.getItem("leaderboard")) || []
   );
 
-  // ✅ Clear all leaderboard scores
   const clearLeaderboard = () => {
     if (window.confirm("Are you sure you want to clear all scores?")) {
       localStorage.removeItem("leaderboard");
