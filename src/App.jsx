@@ -6,7 +6,6 @@ import { useEffect } from 'react';
 
 import Users from './pages/Users.jsx';
 import AddUser from './pages/AddUser.jsx';
-import Management from './pages/Management.jsx';
 import DashHero from './pages/DashHero.jsx';
 import Home from './pages/Home.jsx';
 import Dashboard from './pages/Dashboard.jsx';
