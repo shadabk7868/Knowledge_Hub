@@ -6,7 +6,7 @@ export default function ShowQuiz() {
   const [quizes, setQuizes] = useState({});
   const [editData, setEditData] = useState(null);
 
-  // 🔥 LOAD FROM FIREBASE (same object structure)
+  // LOAD QUIZES FROM FIREBASE
   useEffect(() => {
     const fetchQuizes = async () => {
       const ref = doc(db, "appdata", "allQuizes");
@@ -20,9 +20,16 @@ export default function ShowQuiz() {
     fetchQuizes();
   }, []);
 
+  // DELETE QUIZ
   const deleteQuiz = async (category, index) => {
     const updated = { ...quizes };
+
     updated[category].splice(index, 1);
+
+    // remove category if empty
+    if (updated[category].length === 0) {
+      delete updated[category];
+    }
 
     const ref = doc(db, "appdata", "allQuizes");
     await setDoc(ref, { data: updated });
@@ -30,8 +37,10 @@ export default function ShowQuiz() {
     setQuizes(updated);
   };
 
+  // UPDATE QUIZ
   const updateQuiz = async () => {
     const { category, index, question, options, correctOption } = editData;
+
     const updated = { ...quizes };
 
     updated[category][index] = {
@@ -48,14 +57,16 @@ export default function ShowQuiz() {
   };
 
   return (
-    <div className="container mt-4">
-      <h4 className="mb-3">All Quizzes</h4>
+    <div className="container mt-4 "style={{width:"900px"}}>
+      <h4 className="mb-4 text-center">All Quizzes</h4>
 
       {Object.keys(quizes).map((category) => (
-        <div key={category} className="mb-4">
-          <h5 className="text-primary">{category}</h5>
+        <div key={category} className="mb-5">
+
+          <h5 className="text-primary mb-3">{category}</h5>
 
           {quizes[category].map((q, i) => {
+
             const optionsObj = q.options || {};
             const correctText = optionsObj[q.correctOption];
 
@@ -65,7 +76,8 @@ export default function ShowQuiz() {
               editData.index === i;
 
             return (
-              <div key={i} className="card p-3 mb-2 shadow-sm">
+              <div key={i} className="card shadow p-3 mb-3">
+
                 {isEdit ? (
                   <>
                     <input
@@ -106,9 +118,6 @@ export default function ShowQuiz() {
                         })
                       }
                     >
-                      <option value="" disabled>
-                        Select Correct Option
-                      </option>
                       <option value="a">Option A</option>
                       <option value="b">Option B</option>
                       <option value="c">Option C</option>
@@ -121,6 +130,13 @@ export default function ShowQuiz() {
                         onClick={updateQuiz}
                       >
                         Update
+                      </button>
+
+                      <button
+                        className="btn btn-secondary btn-sm w-25"
+                        onClick={() => setEditData(null)}
+                      >
+                        Cancel
                       </button>
                     </div>
                   </>
@@ -137,11 +153,11 @@ export default function ShowQuiz() {
                     </ul>
 
                     <p className="text-success fw-bold mb-3">
-                      Correct Answer: {q.correctOption?.toUpperCase()} —{" "}
-                      {correctText}
+                      Correct Answer: {q.correctOption?.toUpperCase()} — {correctText}
                     </p>
 
                     <div className="d-flex justify-content-center gap-2">
+
                       <button
                         className="btn btn-warning btn-sm w-25"
                         onClick={() =>
@@ -163,6 +179,7 @@ export default function ShowQuiz() {
                       >
                         Delete
                       </button>
+
                     </div>
                   </>
                 )}
@@ -174,10 +191,3 @@ export default function ShowQuiz() {
     </div>
   );
 }
-
-
-
-
-// User side quiz play (MCQ attempt)
-// 👉 Score calculate
-// 👉 Leaderboard,   okay kardo or user side quiz play me wo quiz aani chaiye jo correct option ke sath admin show quiz me complete ho

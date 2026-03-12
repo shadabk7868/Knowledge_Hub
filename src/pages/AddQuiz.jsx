@@ -198,7 +198,8 @@ const submitHandler = (e) => {
 };
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-5 d-flex justify-content-center">
+  <div className="card shadow p-4" style={{width:"700px"}}>
       <form
         onSubmit={submitHandler}
         className="w-75 m-auto p-4 bg-secondary text-white rounded shadow"
@@ -271,6 +272,7 @@ const submitHandler = (e) => {
           </button>
         </div>
       </form>
+    </div>
     </div>
   );
 }

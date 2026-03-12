@@ -38,7 +38,8 @@ export default function App() {
 
       <Routes>
       
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={ <ProtectedRoute><Home/></ProtectedRoute>}/>
+
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard-login" element={<AdminLogin />} />

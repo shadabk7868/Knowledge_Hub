@@ -28,6 +28,6 @@ export default function ProtectedRoute({children}) {
  
   return isLoggedIn === "true"
     ? children
-    : <Navigate to="/login" replace />;
+    : <Navigate to="/dashboard-login" replace />;
 }
 

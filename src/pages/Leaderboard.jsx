@@ -22,7 +22,7 @@ export default function Leaderboard() {
       {data.length === 0 ? (
         <p className="text-center text-muted">No scores yet</p>
       ) : (
-        <table className="table table-bordered table-striped text-center">
+        <table className="table table-striped table-hover shado">
           <thead className="table-dark">
             <tr>
               <th>#</th>

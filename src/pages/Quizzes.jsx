@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../Firebase";
 
 export default function Quizzes() {
   const navigate = useNavigate();
@@ -13,12 +15,22 @@ export default function Quizzes() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState(0);
 
+  // ✅ LOAD QUIZ FROM FIREBASE
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("allQuizes")) || {};
-    const cats = Object.keys(data);
+    const fetchQuizzes = async () => {
+      const ref = doc(db, "appdata", "allQuizes");
+      const snap = await getDoc(ref);
 
-    setAllQuizes(data);
-    setCategories(cats);
+      if (snap.exists()) {
+        const data = snap.data().data || {};
+        const cats = Object.keys(data);
+
+        setAllQuizes(data);
+        setCategories(cats);
+      }
+    };
+
+    fetchQuizzes();
   }, []);
 
   if (categories.length === 0) {
@@ -31,11 +43,13 @@ export default function Quizzes() {
 
   const submitAnswer = () => {
     setShowAnswer(true);
+
     if (selected === question.correctOption) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
     }
   };
 
+  
   const saveScore = (cat, finalScore) => {
     const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
 
@@ -52,22 +66,16 @@ export default function Quizzes() {
     setSelected("");
     setShowAnswer(false);
 
-    
     if (questionIndex + 1 < quizList.length) {
-      setQuestionIndex(prev => prev + 1);
-    } 
-    
-    else {
+      setQuestionIndex((prev) => prev + 1);
+    } else {
       saveScore(currentCategory, score);
 
-      
       if (categoryIndex + 1 < categories.length) {
-        setCategoryIndex(prev => prev + 1);
+        setCategoryIndex((prev) => prev + 1);
         setQuestionIndex(0);
         setScore(0);
-      } 
-      
-      else {
+      } else {
         navigate("/leaderboard");
       }
     }
@@ -83,13 +91,12 @@ export default function Quizzes() {
   };
 
   return (
-    <div className="container mt-5 ">
-
-      {/* ✅ CATEGORY DROPDOWN – ALWAYS VISIBLE */}
-      <div className="mb-4 d-flex justify-content-start align-items-center gap-2">
-        <label className="fw-bold me-2">Select Category:</label>
+    <div className="container d-flex justify-content-center mt-5">
+  <div className="card shadow-lg p-4" style={{width:"600px"}}>
+      <div className="mb-4 d-flex gap-2">
+        <label className="fw-bold">Select Category:</label>
         <select
-          className="form-select  w-auto text-light bg-secondary"
+          className="form-select w-auto bg-secondary text-light"
           value={currentCategory}
           onChange={changeCategory}
         >
@@ -101,7 +108,10 @@ export default function Quizzes() {
         </select>
       </div>
 
-      <div className="card shadow p-4 mb-4 bg-light">
+      <div className="card shadow p-4 bg-light">
+        <h6 className="text-muted mb-3">
+Question {questionIndex + 1} / {quizList.length}
+</h6>
         <h5 className="fw-bold">{question.question}</h5>
 
         <div className="mt-3">
@@ -115,9 +125,9 @@ export default function Quizzes() {
                 checked={selected === key}
                 disabled={showAnswer}
                 onChange={() => setSelected(key)}
-                id={`option-${key}`}
               />
-              <label className="form-check-label" htmlFor={`option-${key}`}>
+
+              <label className="form-check-label">
                 {question.options[key]}
               </label>
             </div>
@@ -126,7 +136,7 @@ export default function Quizzes() {
 
         {!showAnswer ? (
           <button
-            className="btn btn-primary bg-primary  mt-5  "
+            className="btn btn-primary mt-4"
             disabled={!selected}
             onClick={submitAnswer}
           >
@@ -137,13 +147,14 @@ export default function Quizzes() {
             <p className="fw-bold text-success">
               Correct Answer: {question.options[question.correctOption]}
             </p>
-            <button className="btn btn-success me-2" onClick={nextQuestion}>
+
+            <button className="btn btn-success" onClick={nextQuestion}>
               Next
             </button>
-            
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }

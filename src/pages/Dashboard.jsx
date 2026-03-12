@@ -21,11 +21,8 @@ export default function Dashboard() {
 
       <div className="d-flex w-100 vh-100">
         {/* Sidebar */}
-        <div className="bg-secondary sidebar p-3 d-flex flex-column gap-2" style={{ minWidth: "200px" }}>
+        <div className="bg-secondary sidebar pt-3 p-3 d-flex flex-column gap-4" style={{ minWidth: "200px" }}>
           <NavLink className="nav-link text-white" to="">Dashboard</NavLink>
-          <NavLink className="nav-link text-white" to="users">Users</NavLink>
-          <NavLink className="nav-link text-white" to="adduser">Add User</NavLink>
-          <NavLink className="nav-link text-white" to="management">Management</NavLink>
           <NavLink className="nav-link text-white" to="addquiz">Add Quiz</NavLink>
           <NavLink className="nav-link text-white" to="showquiz">Show Quiz</NavLink>
           <button className="btn btn-info text-white mt-3" onClick={() => navigate("/")}>Go Back</button>

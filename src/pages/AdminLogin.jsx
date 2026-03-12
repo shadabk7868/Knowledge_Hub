@@ -102,7 +102,7 @@ export default function AdminLogin() {
 
   return (
     <div className="w-100 vh-100 d-flex justify-content-center align-items-center">
-      <form onSubmit={handleSubmit} className="w-50 bg-secondary p-5 rounded">
+      <form onSubmit={handleSubmit} className="w-50 bg-danger p-5 rounded">
         <h2 className="mb-4 text-dark">Admin Login</h2>
 
         <div className="mb-3">
@@ -127,7 +127,7 @@ export default function AdminLogin() {
           />
         </div>
 
-        <button type="submit" className="btn btn-primary w-100">
+        <button type="submit" className="btn btn-secondary text-light w-100">
           Login
         </button>
       </form>
