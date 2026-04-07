@@ -7,6 +7,8 @@ export default function Leaderboard() {
     JSON.parse(localStorage.getItem("leaderboard")) || []
   );
 
+  const allCategories = ["HTML", "CSS", "JS", "REACT"];
+
   const clearLeaderboard = () => {
     if (window.confirm("Are you sure you want to clear all scores?")) {
       localStorage.removeItem("leaderboard");
@@ -30,13 +32,18 @@ export default function Leaderboard() {
             </tr>
           </thead>
           <tbody>
-            {data.map((d, i) => (
-              <tr key={i}>
-                <td>{i + 1}</td>
-                <td>{d.category}</td>
-                <td>{d.score}</td>
-              </tr>
-            ))}
+            {allCategories.map((cat, i) => {
+              const filtered = data.filter((d) => d.category === cat);
+              const latest = filtered[filtered.length - 1];
+
+              return (
+                <tr key={i}>
+                  <td>{i + 1}</td>
+                  <td>{cat}</td>
+                  <td>{latest ? latest.score : 0}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

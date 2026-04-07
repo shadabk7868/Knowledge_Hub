@@ -19,7 +19,7 @@ export default function Dashboard() {
         </button>
       </nav>
 
-      <div className="d-flex w-100 vh-100">
+      <div className="d-flex w-100 min-vh-100">
         {/* Sidebar */}
         <div className="bg-secondary sidebar pt-3 p-3 d-flex flex-column gap-4" style={{ minWidth: "200px" }}>
           <NavLink className="nav-link text-white" to="">Dashboard</NavLink>

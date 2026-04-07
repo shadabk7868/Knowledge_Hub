@@ -5,7 +5,6 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
 import Users from './pages/Users.jsx';
-import AddUser from './pages/AddUser.jsx';
 import DashHero from './pages/DashHero.jsx';
 import Home from './pages/Home.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -48,7 +47,6 @@ export default function App() {
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
           <Route index element={<DashHero />} />
           <Route path="users" element={<Users />} />
-          <Route path="adduser" element={<AddUser />} />
           <Route path="updateuser/:id" element={<UpdateUser />} />
           <Route path="addquiz" element={<AddQuiz />} />
           <Route path="showquiz" element={<ShowQuiz />} />

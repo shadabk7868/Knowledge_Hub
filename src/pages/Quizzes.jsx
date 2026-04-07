@@ -14,6 +14,7 @@ export default function Quizzes() {
   const [selected, setSelected] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState(0);
+  const [totalScore, setTotalScore] = useState(0);
 
   // LOAD QUIZ
   useEffect(() => {
@@ -23,10 +24,17 @@ export default function Quizzes() {
 
       if (snap.exists()) {
         const data = snap.data().data || {};
-        const cats = Object.keys(data);
+        const order = ["HTML", "CSS", "JS", "REACT"];
+        const cats = order.filter(cat => data[cat]?.length > 0);
 
         setAllQuizes(data);
         setCategories(cats);
+
+        const firstValidIndex = cats.findIndex(cat => data[cat]?.length > 0);
+
+        if (firstValidIndex !== -1) {
+          setCategoryIndex(firstValidIndex);
+        }
       }
     };
 
@@ -38,18 +46,26 @@ export default function Quizzes() {
   }
 
   const currentCategory = categories[categoryIndex];
-  const quizList = allQuizes[currentCategory];
+  const quizList = allQuizes[currentCategory] || [];
   const question = quizList[questionIndex];
 
+
+  if (!question) {
+    return <div className="text-center mt-5">
+      <div className="spinner-border text-primary"></div>
+      <p className="mt-2">Loading Quiz...</p>
+    </div>
+    ;
+  }
   const submitAnswer = () => {
     setShowAnswer(true);
 
     if (selected === question.correctOption) {
-      setScore((prev) => prev + 1);
-    }
+  setScore((prev) => prev + 1);
+}
   };
 
-  
+
   const saveScore = (cat, finalScore) => {
     const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
 
@@ -85,76 +101,75 @@ export default function Quizzes() {
     const idx = categories.indexOf(e.target.value);
     setCategoryIndex(idx);
     setQuestionIndex(0);
-    setScore(0);
     setSelected("");
     setShowAnswer(false);
   };
 
   return (
-    <div className="container d-flex justify-content-center mt-5">
-  <div className="card shadow-lg p-4" style={{width:"600px"}}>
-      <div className="mb-4 d-flex gap-2">
-        <label className="fw-bold">Select Category:</label>
-        <select
-          className="form-select w-auto bg-secondary text-light"
-          value={currentCategory}
-          onChange={changeCategory}
-        >
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="card shadow p-4 bg-light">
-        <h6 className="text-muted mb-3">
-Question {questionIndex + 1} / {quizList.length}
-</h6>
-        <h5 className="fw-bold">{question.question}</h5>
-
-        <div className="mt-3">
-          {Object.keys(question.options).map((key) => (
-            <div key={key} className="form-check mb-2">
-              <input
-                className="form-check-input"
-                type="radio"
-                name="option"
-                value={key}
-                checked={selected === key}
-                disabled={showAnswer}
-                onChange={() => setSelected(key)}
-              />
-
-              <label className="form-check-label">
-                {question.options[key]}
-              </label>
-            </div>
-          ))}
+    <div className="container bg d-flex justify-content-center mt-5">
+      <div className="card shadow-lg p-4" style={{ width: "600px" }}>
+        <div className="mb-4 d-flex gap-2">
+          <label className="fw-bold">Select Category:</label>
+          <select
+            className="form-select w-auto bg-secondary text-light"
+            value={currentCategory}
+            onChange={changeCategory}
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {!showAnswer ? (
-          <button
-            className="btn btn-primary mt-4"
-            disabled={!selected}
-            onClick={submitAnswer}
-          >
-            Submit
-          </button>
-        ) : (
-          <div className="mt-3">
-            <p className="fw-bold text-success">
-              Correct Answer: {question.options[question.correctOption]}
-            </p>
+        <div className="card shadow p-4 bg-light">
+          <h6 className="text-muted mb-3">
+            Question {questionIndex + 1} / {quizList.length}
+          </h6>
+          <h5 className="fw-bold">{question.question}</h5>
 
-            <button className="btn btn-success" onClick={nextQuestion}>
-              Next
-            </button>
+          <div className="mt-3">
+            {["a", "b", "c", "d"].map((key) => (
+              <div key={key} className="form-check mb-2">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="option"
+                  value={key}
+                  checked={selected === key}
+                  disabled={showAnswer}
+                  onChange={() => setSelected(key)}
+                />
+
+                <label className="form-check-label">
+                  {question.options[key]}
+                </label>
+              </div>
+            ))}
           </div>
-        )}
+
+          {!showAnswer ? (
+            <button
+              className="btn btn-primary mt-4"
+              disabled={!selected}
+              onClick={submitAnswer}
+            >
+              Submit
+            </button>
+          ) : (
+            <div className="mt-3">
+              <p className="fw-bold text-success">
+                Correct Answer: {question.options[question.correctOption]}
+              </p>
+
+              <button className="btn btn-success" onClick={nextQuestion}>
+                Next
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </div>
   );
 }

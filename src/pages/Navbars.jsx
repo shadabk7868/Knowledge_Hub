@@ -28,36 +28,40 @@ export default function Navbars() {
 
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow">
-            <div className="container-fluid">
+  <div className="container-fluid">
 
-                {/* LEFT SIDE */}
-                 <div className="navbar-nav gap-5  d-flex ">
-                    <NavLink className="nav-link text-light" to="/">Home</NavLink>
-                    <NavLink className="nav-link text-light" to="/quizzes">Quizes</NavLink>
-                    <NavLink className="nav-link text-light" to="/leaderboard">Leaderboard</NavLink>
-                    
-                </div> 
+    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span className="navbar-toggler-icon"></span>
+    </button>
 
-                {/* RIGHT SIDE LOGIN / LOGOUT */}
-                <div className="ms-auto">
-                    {loggedinUser ? (
-                        <button
-                            className="btn btn-outline-light btn-sm"
-                            onClick={() => {
-                                localStorage.removeItem("userloggedIn");
-                                nav("/login");
-                            }}
-                        >
-                            Logout
-                        </button>
-                    ) : (
-                        <NavLink className="btn btn-outline-light btn-sm" to="/login">
-                            Login / Signup
-                        </NavLink>
-                    )}
-                </div>
+    <div className="collapse navbar-collapse" id="nav">
 
-            </div>
-        </nav>
+      <div className="navbar-nav gap-3">
+        <NavLink className="nav-link text-light" to="/">Home</NavLink>
+        <NavLink className="nav-link text-light" to="/quizzes">Quizes</NavLink>
+        <NavLink className="nav-link text-light" to="/leaderboard">Leaderboard</NavLink>
+      </div>
+
+      <div className="ms-auto mt-2 mt-lg-0">
+        {loggedinUser ? (
+          <button
+            className="btn btn-outline-light btn-sm"
+            onClick={() => {
+              localStorage.removeItem("userloggedIn");
+              nav("/login");
+            }}
+          >
+            Logout
+          </button>
+        ) : (
+          <NavLink className="btn btn-outline-light btn-sm" to="/login">
+            Login / Signup
+          </NavLink>
+        )}
+      </div>
+
+    </div>
+  </div>
+</nav>
     )
 }

@@ -57,31 +57,36 @@ export default function ShowQuiz() {
   };
 
   return (
-    <div className="container mt-4 "style={{width:"900px"}}>
-      <h4 className="mb-4 text-center">All Quizzes</h4>
+  <div className="container mt-5" style={{ maxWidth: "950px" }}>
+    <h3 className="text-center mb-5 text-primary fw-bold">📚 All Quizzes</h3>
 
-      {Object.keys(quizes).map((category) => (
-        <div key={category} className="mb-5">
+    {Object.keys(quizes).filter((category) => quizes[category]?.length > 0).map((category) => (
+      <div key={category} className="mb-5">
 
-          <h5 className="text-primary mb-3">{category}</h5>
+        {/* CATEGORY HEADER */}
+        <div className="text-dark p-2 px-3 rounded mb-3">
+          <h5 className="m-0">{category}</h5>
+        </div>
 
-          {quizes[category].map((q, i) => {
+        {quizes[category].map((q, i) => {
+          const optionsObj = q.options || {};
+          const correctText = optionsObj[q.correctOption];
 
-            const optionsObj = q.options || {};
-            const correctText = optionsObj[q.correctOption];
+          const isEdit =
+            editData &&
+            editData.category === category &&
+            editData.index === i;
 
-            const isEdit =
-              editData &&
-              editData.category === category &&
-              editData.index === i;
-
-            return (
-              <div key={i} className="card shadow p-3 mb-3">
+          return (
+            <div key={i} className="card shadow-sm mb-3 border-0" style={{ borderRadius: "12px" }}>
+              <div className="card-body">
 
                 {isEdit ? (
                   <>
-                    <input
-                      className="form-control mb-2"
+                    {/* QUESTION */}
+                    <textarea
+                      className="form-control mb-3"
+                      rows="2"
                       value={editData.question}
                       onChange={(e) =>
                         setEditData({
@@ -91,25 +96,31 @@ export default function ShowQuiz() {
                       }
                     />
 
-                    {Object.keys(editData.options).map((key) => (
-                      <input
-                        key={key}
-                        className="form-control mb-1"
-                        value={editData.options[key]}
-                        onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            options: {
-                              ...editData.options,
-                              [key]: e.target.value,
-                            },
-                          })
-                        }
-                      />
-                    ))}
+                    {/* OPTIONS GRID */}
+                    <div className="row">
+                      {["a", "b", "c", "d"].map((key) => (
+                        <div className="col-md-6 mb-2" key={key}>
+                          <input
+                            className="form-control"
+                            placeholder={`Option ${key.toUpperCase()}`}
+                            value={editData.options[key]}
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                options: {
+                                  ...editData.options,
+                                  [key]: e.target.value,
+                                },
+                              })
+                            }
+                          />
+                        </div>
+                      ))}
+                    </div>
 
+                    {/* CORRECT OPTION */}
                     <select
-                      className="form-control mb-3"
+                      className="form-select mb-3 mt-2"
                       value={editData.correctOption}
                       onChange={(e) =>
                         setEditData({
@@ -124,16 +135,17 @@ export default function ShowQuiz() {
                       <option value="d">Option D</option>
                     </select>
 
-                    <div className="d-flex justify-content-center gap-2">
+                    {/* BUTTONS */}
+                    <div className="d-flex gap-2">
                       <button
-                        className="btn btn-success btn-sm w-25"
+                        className="btn btn-success w-100"
                         onClick={updateQuiz}
                       >
-                        Update
+                         Update
                       </button>
 
                       <button
-                        className="btn btn-secondary btn-sm w-25"
+                        className="btn btn-outline-secondary w-100"
                         onClick={() => setEditData(null)}
                       >
                         Cancel
@@ -142,24 +154,32 @@ export default function ShowQuiz() {
                   </>
                 ) : (
                   <>
-                    <p className="fw-bold">{q.question}</p>
+                    {/* QUESTION */}
+                    <h6 className="fw-bold mb-3">
+                      {i + 1}. {q.question}
+                    </h6>
 
-                    <ul>
-                      {Object.entries(optionsObj).map(([key, val]) => (
-                        <li key={key}>
-                          <b>{key.toUpperCase()}.</b> {val}
-                        </li>
-                      ))}
-                    </ul>
+                    {/* OPTIONS */}
+                    <div className="row mb-2">
+                      {["a", "b", "c", "d"].map((key) => (
+  <div className="col-md-6 mb-1" key={key}>
+    <span className="badge bg-light text-dark border me-2">
+      {key.toUpperCase()}
+    </span>
+    {optionsObj[key]}
+  </div>
+))}
+                    </div>
 
-                    <p className="text-success fw-bold mb-3">
-                      Correct Answer: {q.correctOption?.toUpperCase()} — {correctText}
-                    </p>
+                    {/* CORRECT ANSWER */}
+                    <div className="alert alert-success py-2">
+                       Correct: <b>{q.correctOption?.toUpperCase()}</b> — {correctText}
+                    </div>
 
-                    <div className="d-flex justify-content-center gap-2">
-
+                    {/* ACTIONS */}
+                    <div className="d-flex gap-2">
                       <button
-                        className="btn btn-warning btn-sm w-25"
+                        className="btn btn-warning w-100"
                         onClick={() =>
                           setEditData({
                             category,
@@ -170,24 +190,24 @@ export default function ShowQuiz() {
                           })
                         }
                       >
-                        Update
+                         Edit
                       </button>
 
                       <button
-                        className="btn btn-danger btn-sm w-25"
+                        className="btn btn-danger w-100"
                         onClick={() => deleteQuiz(category, i)}
                       >
-                        Delete
+                         Delete
                       </button>
-
                     </div>
                   </>
                 )}
               </div>
-            );
-          })}
-        </div>
-      ))}
-    </div>
-  );
+            </div>
+          );
+        })}
+      </div>
+    ))}
+  </div>
+);
 }

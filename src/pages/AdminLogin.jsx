@@ -21,7 +21,7 @@ export default function AdminLogin() {
       console.log(admin)
       
       const admins = admin.find(
-        a => a.email === email && a.password === Number(password)
+        a => a.email === email && a.password === password
       );
       console.log(admins);
       
@@ -39,7 +39,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="w-100 vh-100 d-flex justify-content-center align-items-center">
+    <div className="w-100 min-vh-100 d-flex justify-content-center align-items-center">
       <form onSubmit={handleSubmit} className="w-50 bg-danger p-5 rounded">
         <h2 className="mb-4 text-dark">Admin Login</h2>
 

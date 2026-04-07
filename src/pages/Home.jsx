@@ -1,18 +1,8 @@
-// import React from 'react'
-
-// export default function Home() {
-//   return (
-//     <div className="container mt-5">
-//       <h1>Welcome to Quiz App</h1>
-//       <p>This is a role based quiz application.</p>
-//     </div>
-//   )
-// }
 import { Link } from "react-router-dom";
 
 export default function Home() {
   return (
-    <div className="container mt-5">
+    <div className="container mt-5 pb-5">
 
       {/* HERO SECTION */}
       <div className="text-center mb-5">
