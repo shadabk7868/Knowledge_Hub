@@ -14,9 +14,9 @@ export default function Quizzes() {
   const [selected, setSelected] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState(0);
-  const [totalScore, setTotalScore] = useState(0);
+  const [quizFinished, setQuizFinished] = useState(false);
 
-  // LOAD QUIZ
+
   useEffect(() => {
     const fetchQuizzes = async () => {
       const ref = doc(db, "appdata", "allQuizes");
@@ -49,20 +49,22 @@ export default function Quizzes() {
   const quizList = allQuizes[currentCategory] || [];
   const question = quizList[questionIndex];
 
-
   if (!question) {
-    return <div className="text-center mt-5">
-      <div className="spinner-border text-primary"></div>
-      <p className="mt-2">Loading Quiz...</p>
-    </div>
-    ;
+    return (
+      <div className="text-center mt-5">
+        <div className="spinner-border text-primary"></div>
+        <p className="mt-2">Loading Quiz...</p>
+      </div>
+    );
   }
+
+
   const submitAnswer = () => {
     setShowAnswer(true);
 
     if (selected === question.correctOption) {
-  setScore((prev) => prev + 1);
-}
+      setScore((prev) => prev + 1);
+    }
   };
 
 
@@ -78,6 +80,7 @@ export default function Quizzes() {
     localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
   };
 
+ 
   const nextQuestion = () => {
     setSelected("");
     setShowAnswer(false);
@@ -86,16 +89,10 @@ export default function Quizzes() {
       setQuestionIndex((prev) => prev + 1);
     } else {
       saveScore(currentCategory, score);
-
-      if (categoryIndex + 1 < categories.length) {
-        setCategoryIndex((prev) => prev + 1);
-        setQuestionIndex(0);
-        setScore(0);
-      } else {
-        navigate("/leaderboard");
-      }
+      setQuizFinished(true); 
     }
   };
+
 
   const changeCategory = (e) => {
     const idx = categories.indexOf(e.target.value);
@@ -103,11 +100,15 @@ export default function Quizzes() {
     setQuestionIndex(0);
     setSelected("");
     setShowAnswer(false);
+    setScore(0);
+    setQuizFinished(false); 
   };
 
   return (
-    <div className="container bg d-flex justify-content-center mt-5">
+    <div className="container d-flex justify-content-center mt-5">
       <div className="card shadow-lg p-4" style={{ width: "600px" }}>
+        
+        {/* CATEGORY SELECT */}
         <div className="mb-4 d-flex gap-2">
           <label className="fw-bold">Select Category:</label>
           <select
@@ -123,52 +124,73 @@ export default function Quizzes() {
           </select>
         </div>
 
-        <div className="card shadow p-4 bg-light">
-          <h6 className="text-muted mb-3">
-            Question {questionIndex + 1} / {quizList.length}
-          </h6>
-          <h5 className="fw-bold">{question.question}</h5>
+        {/* QUIZ OR RESULT */}
+        {quizFinished ? (
+          <div className="text-center">
+            <h3 className="fw-bold">Quiz Completed 🎉</h3>
+            <p className="mt-3">
+              Your Score: <b>{score} / {quizList.length}</b>
+            </p>
 
-          <div className="mt-3">
-            {["a", "b", "c", "d"].map((key) => (
-              <div key={key} className="form-check mb-2">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="option"
-                  value={key}
-                  checked={selected === key}
-                  disabled={showAnswer}
-                  onChange={() => setSelected(key)}
-                />
-
-                <label className="form-check-label">
-                  {question.options[key]}
-                </label>
-              </div>
-            ))}
-          </div>
-
-          {!showAnswer ? (
             <button
-              className="btn btn-primary mt-4"
-              disabled={!selected}
-              onClick={submitAnswer}
+              className="btn btn-primary mt-3"
+              onClick={() => navigate("/leaderboard")}
             >
-              Submit
+              View Leaderboard
             </button>
-          ) : (
-            <div className="mt-3">
-              <p className="fw-bold text-success">
-                Correct Answer: {question.options[question.correctOption]}
-              </p>
+          </div>
+        ) : (
+          <div className="card shadow p-4 bg-light">
 
-              <button className="btn btn-success" onClick={nextQuestion}>
-                Next
-              </button>
+            <h6 className="text-muted mb-3">
+              Question {questionIndex + 1} / {quizList.length}
+            </h6>
+
+            <h5 className="fw-bold">{question.question}</h5>
+
+            {/* OPTIONS */}
+            <div className="mt-3">
+              {["a", "b", "c", "d"].map((key) => (
+                <div key={key} className="form-check mb-2">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="option"
+                    value={key}
+                    checked={selected === key}
+                    disabled={showAnswer}
+                    onChange={() => setSelected(key)}
+                  />
+
+                  <label className="form-check-label">
+                    {question.options[key]}
+                  </label>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
+
+            {/* BUTTONS */}
+            {!showAnswer ? (
+              <button
+                className="btn btn-primary mt-4"
+                disabled={!selected}
+                onClick={submitAnswer}
+              >
+                Submit
+              </button>
+            ) : (
+              <div className="mt-3">
+                <p className="fw-bold text-success">
+                  Correct Answer: {question.options[question.correctOption]}
+                </p>
+
+                <button className="btn btn-success" onClick={nextQuestion}>
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
