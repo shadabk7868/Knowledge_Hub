@@ -5,6 +5,7 @@ import { db } from "../Firebase.js";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -15,16 +16,15 @@ export default function AdminLogin() {
       const snapshot = await getDocs(collection(db, "admin"));
 
       let admin = [];
+
       snapshot.forEach((doc) => {
         admin.push(doc.data());
       });
-      console.log(admin)
-      
+
       const admins = admin.find(
         a => a.email === email && a.password === password
       );
-      console.log(admins);
-      
+
       if (admins) {
         localStorage.setItem("adminLoggedIn", "true");
         navigate("/dashboard");
@@ -39,14 +39,18 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="w-100 min-vh-100 d-flex justify-content-center align-items-center">
-      <form onSubmit={handleSubmit} className="w-50 bg-danger p-5 rounded">
-        <h2 className="mb-4 text-dark">Admin Login</h2>
+    <div className="container-fluid vh-100 d-flex justify-content-center align-items-center bg-light px-3 m-0">
+      <form
+        onSubmit={handleSubmit}
+        className="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 bg-danger p-4 p-md-5 rounded shadow"
+      >
+        <h2 className="mb-4 text-white text-center">Admin Login</h2>
 
         <div className="mb-3">
-          <label className="form-label text-dark">Email</label>
+          <label className="text-white">Email</label>
           <input
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="form-control"
@@ -55,9 +59,10 @@ export default function AdminLogin() {
         </div>
 
         <div className="mb-3">
-          <label className="form-label text-dark">Password</label>
+          <label className="text-white">Password</label>
           <input
             type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="form-control"
@@ -65,7 +70,7 @@ export default function AdminLogin() {
           />
         </div>
 
-        <button type="submit" className="btn btn-secondary text-light w-100">
+        <button type="submit" className="btn btn-secondary w-100 fw-bold">
           Login
         </button>
       </form>

@@ -26,36 +26,32 @@ export default function Register() {
 
     onSubmit: async (values) => {
       try {
-        const docRef = await addDoc(collection(db, "users"), {
-          email: values.email,
-          password: values.password,
-        });
+        await addDoc(collection(db, "users"), values);
 
-        console.log("Document written with ID: ", docRef.id);
         alert("User registered successfully");
         nav("/login");
-
       } catch (err) {
-        console.error("Error adding document: ", err);
+        console.error(err);
         alert("Something went wrong");
       }
     },
   });
 
   return (
-    <div className='w-100 vh-100 d-flex justify-content-center align-items-center bg-light'>
+    <div className="container-fluid vh-100 d-flex justify-content-center align-items-center bg-light px-3 m-0">
       <form
         onSubmit={formik.handleSubmit}
-        className='w-50 text-white p-5 rounded shadow'
-        style={{ background: "linear-gradient(135deg, #8d64b6, #48325c)" }}
+        className="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 text-white p-4 p-md-5 rounded shadow"
+        style={{ background: "linear-gradient(135deg,#8d64b6,#48325c)" }}
       >
-        <h2 className='text-center text-dark mb-4'>Register User</h2>
+        <h2 className="text-center text-white mb-4">Register User</h2>
 
         <div className="mb-3">
-          <label className="form-label">Email</label>
+          <label>Email</label>
           <input
             type="email"
             name="email"
+            autoComplete="email"
             className="form-control"
             value={formik.values.email}
             onChange={formik.handleChange}
@@ -67,10 +63,11 @@ export default function Register() {
         </div>
 
         <div className="mb-4">
-          <label className="form-label">Password</label>
+          <label>Password</label>
           <input
             type="password"
             name="password"
+            autoComplete="new-password"
             className="form-control"
             value={formik.values.password}
             onChange={formik.handleChange}
