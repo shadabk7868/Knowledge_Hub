@@ -38,7 +38,7 @@ export default function Navbars() {
 
       <div className="navbar-nav gap-3">
         <NavLink className="nav-link text-light" to="/">Home</NavLink>
-        <NavLink className="nav-link text-light" to="/quizzes">Quizes</NavLink>
+        <NavLink className="nav-link text-light" to="/categories">Quizes</NavLink>
         <NavLink className="nav-link text-light" to="/leaderboard">Leaderboard</NavLink>
       </div>
 

@@ -18,6 +18,7 @@ import AddQuiz from './pages/AddQuiz.jsx';
 import ShowQuiz from './pages/ShowQuiz.jsx';
 import Navbar from './pages/Navbars.jsx';
 import Quizzes from './pages/Quizzes.jsx';
+import Categories from './pages/Categories.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 
 export default function App() {
@@ -41,8 +42,9 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
 
-        <Route path="/quizzes" element={<ProtectedUserRoute><Quizzes /></ProtectedUserRoute>} />
-        <Route path="/leaderboard" element={<ProtectedUserRoute><Leaderboard /></ProtectedUserRoute>} />
+        <Route path="/categories" element={<ProtectedUserRoute><Categories /></ProtectedUserRoute>} />
+        <Route path="/quizzes/:category" element={<ProtectedUserRoute><Quizzes /></ProtectedUserRoute>} />
+        <Route path="/leaderboard/:category" element={<ProtectedUserRoute><Leaderboard /></ProtectedUserRoute>} />
 
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
           <Route index element={<DashHero />} />

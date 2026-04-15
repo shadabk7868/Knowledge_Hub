@@ -1,21 +1,20 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../Firebase";
 
 export default function Quizzes() {
   const navigate = useNavigate();
+  const { category } = useParams();
 
   const [allQuizes, setAllQuizes] = useState({});
-  const [categories, setCategories] = useState([]);
-  const [categoryIndex, setCategoryIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
-
 
   useEffect(() => {
     const fetchQuizzes = async () => {
@@ -24,32 +23,27 @@ export default function Quizzes() {
 
       if (snap.exists()) {
         const data = snap.data().data || {};
-        const order = ["HTML", "CSS", "JS", "REACT"];
-        const cats = order.filter(cat => data[cat]?.length > 0);
-
         setAllQuizes(data);
-        setCategories(cats);
-
-        const firstValidIndex = cats.findIndex(cat => data[cat]?.length > 0);
-
-        if (firstValidIndex !== -1) {
-          setCategoryIndex(firstValidIndex);
-        }
       }
+
+      setLoading(false);
     };
 
     fetchQuizzes();
   }, []);
 
-  if (categories.length === 0) {
-    return <h3 className="text-center mt-5">No Quiz Available</h3>;
-  }
+  useEffect(() => {
+    setQuestionIndex(0);
+    setSelected("");
+    setShowAnswer(false);
+    setScore(0);
+    setQuizFinished(false);
+  }, [category]);
 
-  const currentCategory = categories[categoryIndex];
-  const quizList = allQuizes[currentCategory] || [];
+  const quizList = allQuizes[category] || [];
   const question = quizList[questionIndex];
 
-  if (!question) {
+  if (loading) {
     return (
       <div className="text-center mt-5">
         <div className="spinner-border text-primary"></div>
@@ -58,6 +52,9 @@ export default function Quizzes() {
     );
   }
 
+  if (!quizList.length) {
+    return <h3 className="text-center mt-5">No Quiz Found 😢</h3>;
+  }
 
   const submitAnswer = () => {
     setShowAnswer(true);
@@ -67,20 +64,31 @@ export default function Quizzes() {
     }
   };
 
+  const saveScore = (finalScore) => {
+  const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+  const currentUser = JSON.parse(localStorage.getItem("user"));
 
-  const saveScore = (cat, finalScore) => {
-    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+  if (!currentUser || !currentUser.email) {
+    alert("User not logged in");
+    return;
+  }
 
-    leaderboard.push({
-      category: cat,
-      score: finalScore,
-      date: new Date().toLocaleString(),
-    });
+  // remove old score (same user + category)
+  const filtered = leaderboard.filter(
+    (item) =>
+      !(item.email === currentUser.email && item.category === category)
+  );
 
-    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-  };
+  filtered.push({
+    email: currentUser.email,
+    category,
+    score: finalScore,
+    date: new Date().toLocaleString(),
+  });
 
- 
+  localStorage.setItem("leaderboard", JSON.stringify(filtered));
+};
+
   const nextQuestion = () => {
     setSelected("");
     setShowAnswer(false);
@@ -88,43 +96,19 @@ export default function Quizzes() {
     if (questionIndex + 1 < quizList.length) {
       setQuestionIndex((prev) => prev + 1);
     } else {
-      saveScore(currentCategory, score);
-      setQuizFinished(true); 
+      saveScore(score);
+      setQuizFinished(true);
     }
-  };
-
-
-  const changeCategory = (e) => {
-    const idx = categories.indexOf(e.target.value);
-    setCategoryIndex(idx);
-    setQuestionIndex(0);
-    setSelected("");
-    setShowAnswer(false);
-    setScore(0);
-    setQuizFinished(false); 
   };
 
   return (
     <div className="container d-flex justify-content-center mt-5">
-      <div className="card shadow-lg p-4" style={{ width: "600px" }}>
-        
-        {/* CATEGORY SELECT */}
-        <div className="mb-4 d-flex gap-2">
-          <label className="fw-bold">Select Category:</label>
-          <select
-            className="form-select w-auto bg-secondary text-light"
-            value={currentCategory}
-            onChange={changeCategory}
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="card shadow p-4" style={{ width: "600px" }}>
 
-        {/* QUIZ OR RESULT */}
+        <h4 className="fw-bold mb-3 text-center">
+          {category} Quiz
+        </h4>
+
         {quizFinished ? (
           <div className="text-center">
             <h3 className="fw-bold">Quiz Completed 🎉</h3>
@@ -134,13 +118,13 @@ export default function Quizzes() {
 
             <button
               className="btn btn-primary mt-3"
-              onClick={() => navigate("/leaderboard")}
+              onClick={() => navigate(`/leaderboard/${category}`)}
             >
               View Leaderboard
             </button>
           </div>
         ) : (
-          <div className="card shadow p-4 bg-light">
+          <div>
 
             <h6 className="text-muted mb-3">
               Question {questionIndex + 1} / {quizList.length}
@@ -158,13 +142,22 @@ export default function Quizzes() {
                     name="option"
                     value={key}
                     checked={selected === key}
-                    disabled={showAnswer}
+                    disabled={showAnswer }
                     onChange={() => setSelected(key)}
                   />
 
                   <label className="form-check-label">
                     {question.options[key]}
                   </label>
+
+                  {/* SIMPLE TEXT FEEDBACK */}
+                  {showAnswer && key === selected && selected !== question.correctOption && (
+                    <div className="text-danger small">Wrong answer</div>
+                  )}
+
+                  {showAnswer && key === question.correctOption && (
+                    <div className="text-success small">Correct answer</div>
+                  )}
                 </div>
               ))}
             </div>
@@ -179,15 +172,9 @@ export default function Quizzes() {
                 Submit
               </button>
             ) : (
-              <div className="mt-3">
-                <p className="fw-bold text-success">
-                  Correct Answer: {question.options[question.correctOption]}
-                </p>
-
-                <button className="btn btn-success" onClick={nextQuestion}>
-                  Next
-                </button>
-              </div>
+              <button className="btn btn-success mt-3" onClick={nextQuestion}>
+                Next
+              </button>
             )}
           </div>
         )}

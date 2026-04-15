@@ -2,6 +2,7 @@ import { useNavigate, NavLink } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../Firebase.js';
 import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 export default function Login() {
   const nav = useNavigate();
@@ -12,81 +13,115 @@ export default function Login() {
       password: "",
     },
 
-    onSubmit: async (values) => {
+    validationSchema: Yup.object({
+      email: Yup.string()
+        .email("Enter valid email")
+        .required("Email is required"),
+
+      password: Yup.string()
+        .required("Password is required"),
+    }),
+
+    onSubmit: async (values, { setSubmitting }) => {
       try {
+        const cleanValues = {
+          email: values.email.trim(),
+          password: values.password.trim(),
+        };
+
         const querySnapshot = await getDocs(collection(db, "users"));
 
         let users = [];
-
-        querySnapshot.forEach((doc) => {
-          users.push(doc.data());
-        });
+        querySnapshot.forEach((doc) => users.push(doc.data()));
 
         const user = users.find(
-          u => u.email === values.email && u.password === values.password
+          u =>
+            u.email === cleanValues.email &&
+            u.password === cleanValues.password
         );
 
         if (user) {
           localStorage.setItem("userloggedIn", "true");
+
+          localStorage.setItem(
+            "user",
+            JSON.stringify({
+              email: user.email,
+            })
+          );
+
           nav("/", { replace: true });
         } else {
           alert("Invalid email or password");
         }
-
       } catch (err) {
         console.error(err);
         alert("Login failed");
+      } finally {
+        setSubmitting(false);
       }
     }
   });
 
   return (
-    <div className="container-fluid vh-100 d-flex justify-content-center align-items-center px-3 m-0">
+    <div
+      className="container-fluid vh-100 d-flex justify-content-center align-items-center"
+      style={{
+  background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)"
+}}
+    >
       <form
         onSubmit={formik.handleSubmit}
-        className="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 p-4 p-md-5 rounded shadow"
-        style={{
-          background: "linear-gradient(135deg,#8d64b6,#48325c)"
-        }}
+        className="col-11 col-sm-9 col-md-6 col-lg-4 p-4 rounded-4 shadow-lg bg-white"
       >
-        <h2 className="text-center text-white mb-4">Login User</h2>
+        <h2 className="text-center fw-bold mb-4">Welcome Back 👋</h2>
 
         <div className="mb-3">
-          <label className="text-white">Email</label>
+          <label className="fw-semibold">Email</label>
           <input
             type="email"
             name="email"
-            autoComplete="email"
-            className="form-control"
+            className="form-control rounded-3"
+            placeholder="Enter your email"
             value={formik.values.email}
             onChange={formik.handleChange}
-            required
+            onBlur={formik.handleBlur}
           />
+          {formik.touched.email && formik.errors.email && (
+            <small className="text-danger">{formik.errors.email}</small>
+          )}
         </div>
 
         <div className="mb-3">
-          <label className="text-white">Password</label>
+          <label className="fw-semibold">Password</label>
           <input
             type="password"
             name="password"
-            autoComplete="current-password"
-            className="form-control"
+            className="form-control rounded-3"
+            placeholder="Enter your password"
             value={formik.values.password}
             onChange={formik.handleChange}
-            required
+            onBlur={formik.handleBlur}
           />
+          {formik.touched.password && formik.errors.password && (
+            <small className="text-danger">{formik.errors.password}</small>
+          )}
         </div>
 
-        <div className="d-flex flex-column flex-sm-row justify-content-between gap-3">
-          <button className="btn btn-light fw-bold w-100">
-            Submit
+        <div className="d-grid gap-3 mt-4">
+          <button
+            type="submit"
+            disabled={!formik.isValid || formik.isSubmitting}
+            className="btn btn-primary fw-bold py-2"
+          >
+            {formik.isSubmitting ? "Logging in..." : "Login"}
           </button>
 
           <NavLink
             to="/register"
-            className="text-dark text-decoration-none text-center mt-2 mt-sm-0"
+            className="btn btn-outline-dark fw-bold py-2"
           >
-            Register
+            Create Account
           </NavLink>
         </div>
       </form>

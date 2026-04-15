@@ -1,49 +1,58 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function Leaderboard() {
   const navigate = useNavigate();
+  const { category } = useParams();
+
   const [data, setData] = useState(
     JSON.parse(localStorage.getItem("leaderboard")) || []
   );
 
-  const allCategories = ["HTML", "CSS", "JS", "REACT"];
+  // ✅ case-insensitive filter
+  const filteredData = data
+    .filter(
+      (item) =>
+        item.category?.toLowerCase() === category?.toLowerCase()
+    )
+    .sort((a, b) => b.score - a.score);
 
   const clearLeaderboard = () => {
-    if (window.confirm("Are you sure you want to clear all scores?")) {
-      localStorage.removeItem("leaderboard");
-      setData([]);
+    if (window.confirm("Clear scores for this category?")) {
+      const newData = data.filter(
+        (item) =>
+          item.category?.toLowerCase() !== category?.toLowerCase()
+      );
+      localStorage.setItem("leaderboard", JSON.stringify(newData));
+      setData(newData);
     }
   };
 
   return (
     <div className="container mt-4">
-      <h3 className="text-center mb-4">Leaderboard</h3>
+      <h3 className="text-center mb-4">
+        {category} Leaderboard 🏆
+      </h3>
 
-      {data.length === 0 ? (
+      {filteredData.length === 0 ? (
         <p className="text-center text-muted">No scores yet</p>
       ) : (
-        <table className="table table-striped table-hover shado">
+        <table className="table table-striped">
           <thead className="table-dark">
             <tr>
               <th>#</th>
-              <th>Category</th>
+              <th>User</th>
               <th>Score</th>
             </tr>
           </thead>
           <tbody>
-            {allCategories.map((cat, i) => {
-              const filtered = data.filter((d) => d.category === cat);
-              const latest = filtered[filtered.length - 1];
-
-              return (
-                <tr key={i}>
-                  <td>{i + 1}</td>
-                  <td>{cat}</td>
-                  <td>{latest ? latest.score : 0}</td>
-                </tr>
-              );
-            })}
+            {filteredData.map((item, index) => (
+              <tr key={index}>
+                <td>{index + 1}</td>
+                <td>{item.email}</td>
+                <td>{item.score}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       )}
@@ -51,7 +60,7 @@ export default function Leaderboard() {
       <div className="d-flex gap-2 justify-content-center mt-3">
         <button
           className="btn btn-primary"
-          onClick={() => navigate("/quizzes")}
+          onClick={() => navigate("/categories")}
         >
           Play Again
         </button>
