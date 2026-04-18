@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../Firebase.js";
+
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../Firebase";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -9,68 +10,72 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const ADMIN_EMAILS = ["admin@gmail.com"];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const snapshot = await getDocs(collection(db, "admin"));
-
-      let admin = [];
-
-      snapshot.forEach((doc) => {
-        admin.push(doc.data());
-      });
-
-      const admins = admin.find(
-        a => a.email === email && a.password === password
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password.trim()
       );
 
-      if (admins) {
+      const user = userCredential.user;
+
+      if (ADMIN_EMAILS.includes(user.email)) {
         localStorage.setItem("adminLoggedIn", "true");
         navigate("/dashboard");
       } else {
-        alert("Invalid admin credentials!");
+        alert("You are not an admin ");
       }
 
     } catch (err) {
       console.error(err);
-      alert("Something went wrong");
+
+      if (err.code === "auth/user-not-found") {
+        alert("Admin not found");
+      } else if (err.code === "auth/wrong-password") {
+        alert("Wrong password");
+      } else {
+        alert("Login failed");
+      }
     }
   };
 
   return (
-    <div className="container-fluid vh-100 d-flex justify-content-center align-items-center bg-light px-3 m-0">
+    <div className="container-fluid vh-100 d-flex justify-content-center align-items-center bg-light"
+    style={{ background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)" }}>
       <form
         onSubmit={handleSubmit}
-        className="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 bg-danger p-4 p-md-5 rounded shadow"
+        className="col-12 col-md-5 bg-light p-4 rounded shadow"
       >
-        <h2 className="mb-4 text-white text-center">Admin Login</h2>
+        <h2 className="text-dark text-center mb-4">Admin Login</h2>
 
         <div className="mb-3">
-          <label className="text-white">Email</label>
+          <label className="text-dark">Email</label>
           <input
             type="email"
-            autoComplete="email"
+            className="form-control"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="form-control"
             required
           />
         </div>
 
         <div className="mb-3">
-          <label className="text-white">Password</label>
+          <label className="text-dark">Password</label>
           <input
             type="password"
-            autoComplete="current-password"
+            className="form-control"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="form-control"
             required
           />
         </div>
 
-        <button type="submit" className="btn btn-secondary w-100 fw-bold">
+        <button className="btn btn-primary w-100">
           Login
         </button>
       </form>

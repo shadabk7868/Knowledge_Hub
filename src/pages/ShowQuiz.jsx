@@ -5,8 +5,9 @@ import { db } from "../Firebase";
 export default function ShowQuiz() {
   const [quizes, setQuizes] = useState({});
   const [editData, setEditData] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // LOAD QUIZES 
+  // LOAD QUIZES
   useEffect(() => {
     const fetchQuizes = async () => {
       const ref = doc(db, "appdata", "allQuizes");
@@ -26,9 +27,9 @@ export default function ShowQuiz() {
 
     updated[category].splice(index, 1);
 
-    // remove if empty
     if (updated[category].length === 0) {
       delete updated[category];
+      setSelectedCategory(null);
     }
 
     const ref = doc(db, "appdata", "allQuizes");
@@ -57,36 +58,68 @@ export default function ShowQuiz() {
   };
 
   return (
-  <div className="container mt-5" style={{ maxWidth: "950px" }}>
-    <h3 className="text-center mb-5 text-primary fw-bold">📚 All Quizzes</h3>
+    <div className="container mt-5" style={{ maxWidth: "950px" }}>
+      <h3 className="text-center mb-5 text-primary fw-bold">
+        📚 All Quizzes
+      </h3>
 
-    {Object.keys(quizes).filter((category) => quizes[category]?.length > 0).map((category) => (
-      <div key={category} className="mb-5">
+      {/* ✅ CATEGORY VIEW */}
+      {!selectedCategory && (
+        <div className="row justify-content-center">
+          {Object.keys(quizes).length === 0 && (
+            <p className="text-center text-muted">No Quiz Available</p>
+          )}
 
-        {/* CATEGORY HEADER */}
-        <div className="text-dark p-2 px-3 rounded mb-3">
-          <h5 className="m-0">{category}</h5>
+          {Object.keys(quizes).map((category) => (
+            <div key={category} className="col-md-3 mb-3">
+              <div
+                className="card shadow text-center p-4"
+                style={{
+                  cursor: "pointer",
+                  borderRadius: "12px",
+                  transition: "0.3s",
+                }}
+                onClick={() => setSelectedCategory(category)}
+              >
+                <h5 className="fw-bold">{category}</h5>
+                <p className="text-muted">
+                  {quizes[category].length} Questions
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
+      )}
 
-        {quizes[category].map((q, i) => {
-          const optionsObj = q.options || {};
-          const correctText = optionsObj[q.correctOption];
+      {selectedCategory && (
+        <>
+          <button
+            className="btn btn-secondary mb-3"
+            onClick={() => setSelectedCategory(null)}
+          >
+            ← Back to Categories
+          </button>
 
-          const isEdit =
-            editData &&
-            editData.category === category &&
-            editData.index === i;
+          {quizes[selectedCategory].map((q, i) => {
+            const optionsObj = q.options || {};
+            const correctText = optionsObj[q.correctOption];
 
-          return (
-            <div key={i} className="card shadow-sm mb-3 border-0" style={{ borderRadius: "12px" }}>
-              <div className="card-body">
+            const isEdit =
+              editData &&
+              editData.category === selectedCategory &&
+              editData.index === i;
 
+            return (
+              <div
+                key={i}
+                className="card shadow-sm mb-3 border-0 p-3"
+                style={{ borderRadius: "12px" }}
+              >
                 {isEdit ? (
                   <>
-                    {/* QUESTION */}
+                    {/* EDIT MODE */}
                     <textarea
                       className="form-control mb-3"
-                      rows="2"
                       value={editData.question}
                       onChange={(e) =>
                         setEditData({
@@ -96,13 +129,11 @@ export default function ShowQuiz() {
                       }
                     />
 
-                    {/* OPTIONS GRID */}
                     <div className="row">
                       {["a", "b", "c", "d"].map((key) => (
-                        <div className="col-md-6 mb-2" key={key}>
+                        <div key={key} className="col-md-6 mb-2">
                           <input
                             className="form-control"
-                            placeholder={`Option ${key.toUpperCase()}`}
                             value={editData.options[key]}
                             onChange={(e) =>
                               setEditData({
@@ -118,9 +149,8 @@ export default function ShowQuiz() {
                       ))}
                     </div>
 
-                    {/* CORRECT OPTION */}
                     <select
-                      className="form-select mb-3 mt-2"
+                      className="form-select mb-3"
                       value={editData.correctOption}
                       onChange={(e) =>
                         setEditData({
@@ -135,13 +165,12 @@ export default function ShowQuiz() {
                       <option value="d">Option D</option>
                     </select>
 
-                    {/* BUTTONS */}
                     <div className="d-flex gap-2">
                       <button
                         className="btn btn-success w-100"
                         onClick={updateQuiz}
                       >
-                         Update
+                        Update
                       </button>
 
                       <button
@@ -154,35 +183,28 @@ export default function ShowQuiz() {
                   </>
                 ) : (
                   <>
-                    {/* QUESTION */}
-                    <h6 className="fw-bold mb-3">
+                    {/* VIEW MODE */}
+                    <h6 className="fw-bold mb-2">
                       {i + 1}. {q.question}
                     </h6>
 
-                    {/* OPTIONS */}
-                    <div className="row mb-2">
-                      {["a", "b", "c", "d"].map((key) => (
-  <div className="col-md-6 mb-1" key={key}>
-    <span className="badge bg-light text-dark border me-2">
-      {key.toUpperCase()}
-    </span>
-    {optionsObj[key]}
-  </div>
-))}
+                    {["a", "b", "c", "d"].map((key) => (
+                      <div key={key} className="mb-1">
+                        <b>{key.toUpperCase()}:</b> {optionsObj[key]}
+                      </div>
+                    ))}
+
+                    <div className="alert alert-success mt-2 py-2">
+                      Correct:{" "}
+                      <b>{q.correctOption.toUpperCase()}</b> — {correctText}
                     </div>
 
-                    {/* CORRECT ANSWER */}
-                    <div className="alert alert-success py-2">
-                       Correct: <b>{q.correctOption?.toUpperCase()}</b> — {correctText}
-                    </div>
-
-                    {/* ACTIONS */}
                     <div className="d-flex gap-2">
                       <button
                         className="btn btn-warning w-100"
                         onClick={() =>
                           setEditData({
-                            category,
+                            category: selectedCategory,
                             index: i,
                             question: q.question,
                             options: q.options,
@@ -190,24 +212,25 @@ export default function ShowQuiz() {
                           })
                         }
                       >
-                         Edit
+                        Edit
                       </button>
 
                       <button
                         className="btn btn-danger w-100"
-                        onClick={() => deleteQuiz(category, i)}
+                        onClick={() =>
+                          deleteQuiz(selectedCategory, i)
+                        }
                       >
-                         Delete
+                        Delete
                       </button>
                     </div>
                   </>
                 )}
               </div>
-            </div>
-          );
-        })}
-      </div>
-    ))}
-  </div>
-);
+            );
+          })}
+        </>
+      )}
+    </div>
+  );
 }

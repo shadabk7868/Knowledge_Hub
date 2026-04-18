@@ -1,32 +1,38 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../Firebase";
 export default function Leaderboard() {
-  const navigate = useNavigate();
   const { category } = useParams();
+  const navigate = useNavigate();
 
-  const [data, setData] = useState(
-    JSON.parse(localStorage.getItem("leaderboard")) || []
-  );
+  const [data, setData] = useState([]);
 
-  // ✅ case-insensitive filter
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "leaderboard"));
+
+        let list = [];
+        snapshot.forEach((doc) => {
+          list.push(doc.data());
+        });
+
+        setData(list);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
+
   const filteredData = data
     .filter(
       (item) =>
         item.category?.toLowerCase() === category?.toLowerCase()
     )
     .sort((a, b) => b.score - a.score);
-
-  const clearLeaderboard = () => {
-    if (window.confirm("Clear scores for this category?")) {
-      const newData = data.filter(
-        (item) =>
-          item.category?.toLowerCase() !== category?.toLowerCase()
-      );
-      localStorage.setItem("leaderboard", JSON.stringify(newData));
-      setData(newData);
-    }
-  };
 
   return (
     <div className="container mt-4">
@@ -57,19 +63,12 @@ export default function Leaderboard() {
         </table>
       )}
 
-      <div className="d-flex gap-2 justify-content-center mt-3">
+      <div className="text-center mt-3">
         <button
           className="btn btn-primary"
           onClick={() => navigate("/categories")}
         >
           Play Again
-        </button>
-
-        <button
-          className="btn btn-danger"
-          onClick={clearLeaderboard}
-        >
-          Clear Scores
         </button>
       </div>
     </div>

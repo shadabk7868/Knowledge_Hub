@@ -12,7 +12,10 @@ export default function Dashboard() {
   return (
     <>
       {/* Navbar */}
-      <nav className="navbar navbar-dark bg-dark px-4">
+      <nav className="navbar  px-4"
+      style={{
+    background: "linear-gradient(135deg, #445bc2, #521a8a)"
+  }}>
         <span className="navbar-brand fw-bold">Admin Panel</span>
         <button className="btn btn-outline-light btn-sm" onClick={logout}>
           Logout

@@ -1,24 +1,3 @@
-// import React from 'react'
-// import { NavLink, useNavigate } from 'react-router-dom'
- 
-// export default function Navbars() {
-//     let loggedinUser = localStorage.getItem("userloggedIn")
-//     let nav = useNavigate()
-//     return (
-//         <div className='d-flex gap-3'>
-//             <NavLink className={"nav-link"} to="/">Home</NavLink>
-//             <NavLink className={"nav-link"} to="/about">About</NavLink>
-//             <NavLink className={"nav-link"} to="/quizzes">Quizes</NavLink>
-//             <NavLink className={"nav-link"} to="/leaderboard">Leaderboard</NavLink>
-//             {loggedinUser ? <button onClick={() => {
-//                 localStorage.removeItem("userloggedIn");
-//                 nav("/login")
-//             }}>Logout</button> :
-//                 <NavLink className={"nav-link"} to="/login">Login/Signup</NavLink>
-//             }
-//         </div>
-//     )
-// }
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
  
@@ -27,7 +6,10 @@ export default function Navbars() {
     let nav = useNavigate()
 
     return (
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+        <nav className="navbar navbar-expand-lg shadow"
+        style={{
+    background: "linear-gradient(135deg, #445bc2, #281a37)"
+  }}>
   <div className="container-fluid">
 
     <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">

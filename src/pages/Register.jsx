@@ -1,9 +1,10 @@
 import React from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { addDoc, collection } from 'firebase/firestore';
-import { db } from '../Firebase.js';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../Firebase";
 
 export default function Register() {
   const nav = useNavigate();
@@ -32,18 +33,22 @@ export default function Register() {
 
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const cleanValues = {
-          email: values.email.trim(),
-          password: values.password.trim(),
-        };
+        const email = values.email.trim();
+        const password = values.password.trim();
 
-        await addDoc(collection(db, "users"), cleanValues);
+        await createUserWithEmailAndPassword(auth, email, password);
 
-        alert("User registered successfully");
+        alert("User registered successfully ");
         nav("/login");
+
       } catch (err) {
         console.error(err);
-        alert("Something went wrong");
+
+        if (err.code === "auth/email-already-in-use") {
+          alert("Email already registered");
+        } else {
+          alert("Registration failed");
+        }
       } finally {
         setSubmitting(false);
       }
@@ -51,12 +56,9 @@ export default function Register() {
   });
 
   return (
-    <div
-      className="container-fluid vh-100 d-flex justify-content-center align-items-center"
-      style={{
-  background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)"
-}}
-    >
+    <div className="container-fluid vh-100 d-flex justify-content-center align-items-center"
+      style={{ background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)" }}>
+
       <form
         onSubmit={formik.handleSubmit}
         className="col-11 col-sm-9 col-md-6 col-lg-4 p-4 rounded-4 shadow-lg bg-white"
@@ -68,8 +70,7 @@ export default function Register() {
           <input
             type="email"
             name="email"
-            className="form-control rounded-3"
-            placeholder="Enter your email"
+            className="form-control"
             value={formik.values.email}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -84,8 +85,7 @@ export default function Register() {
           <input
             type="password"
             name="password"
-            className="form-control rounded-3"
-            placeholder="Create password"
+            className="form-control"
             value={formik.values.password}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -100,8 +100,7 @@ export default function Register() {
           <input
             type="password"
             name="confirmPassword"
-            className="form-control rounded-3"
-            placeholder="Confirm password"
+            className="form-control"
             value={formik.values.confirmPassword}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -115,15 +114,12 @@ export default function Register() {
           <button
             type="submit"
             disabled={!formik.isValid || formik.isSubmitting}
-            className="btn btn-primary fw-bold py-2"
+            className="btn btn-primary"
           >
             {formik.isSubmitting ? "Registering..." : "Register"}
           </button>
 
-          <NavLink
-            to="/login"
-            className="btn btn-outline-dark fw-bold py-2"
-          >
+          <NavLink to="/login" className="btn btn-outline-dark">
             Already have an account?
           </NavLink>
         </div>

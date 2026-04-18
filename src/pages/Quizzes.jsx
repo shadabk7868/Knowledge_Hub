@@ -64,8 +64,7 @@ export default function Quizzes() {
     }
   };
 
-  const saveScore = (finalScore) => {
-  const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+  const saveScore = async (finalScore) => {
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
   if (!currentUser || !currentUser.email) {
@@ -73,20 +72,19 @@ export default function Quizzes() {
     return;
   }
 
-  // remove old score (same user + category)
-  const filtered = leaderboard.filter(
-    (item) =>
-      !(item.email === currentUser.email && item.category === category)
-  );
+  try {
+    await addDoc(collection(db, "leaderboard"), {
+      email: currentUser.email,
+      category: category,
+      score: finalScore,
+      createdAt: new Date(),
+    });
 
-  filtered.push({
-    email: currentUser.email,
-    category,
-    score: finalScore,
-    date: new Date().toLocaleString(),
-  });
-
-  localStorage.setItem("leaderboard", JSON.stringify(filtered));
+    console.log("Score saved to Firestore ");
+  } catch (error) {
+    console.error(error);
+    alert("Error saving score");
+  }
 };
 
   const nextQuestion = () => {
