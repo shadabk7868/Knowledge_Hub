@@ -58,7 +58,7 @@ export default function Home() {
                   Compete with others & climb the leaderboard.
                 </p>
 
-                <Link to="/leaderboard" className="btn btn-outline-primary mt-3">
+                <Link to="/rankings" className="btn btn-outline-primary mt-3">
                   View Leaderboard
                 </Link>
               </div>

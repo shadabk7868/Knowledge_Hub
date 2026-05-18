@@ -1,6 +1,6 @@
 import { useNavigate, NavLink } from 'react-router-dom';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../Firebase.js';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../Firebase";
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
@@ -23,44 +23,43 @@ export default function Login() {
     }),
 
     onSubmit: async (values, { setSubmitting }) => {
-      try {
-        const cleanValues = {
-          email: values.email.trim(),
-          password: values.password.trim(),
-        };
+  try {
+    const email = values.email.trim();
+    const password = values.password.trim();
 
-        const querySnapshot = await getDocs(collection(db, "users"));
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-        let users = [];
-        querySnapshot.forEach((doc) => users.push(doc.data()));
+    const user = userCredential.user;
 
-        const user = users.find(
-          u =>
-            u.email === cleanValues.email &&
-            u.password === cleanValues.password
-        );
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        email: user.email,
+      })
+    );
 
-        if (user) {
-          localStorage.setItem("userloggedIn", "true");
+    nav("/", { replace: true });
 
-          localStorage.setItem(
-            "user",
-            JSON.stringify({
-              email: user.email,
-            })
-          );
+  } catch (err) {
+    console.error(err);
 
-          nav("/", { replace: true });
-        } else {
-          alert("Invalid email or password");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Login failed");
-      } finally {
-        setSubmitting(false);
-      }
+    if (
+      err.code === "auth/invalid-credential" ||
+      err.code === "auth/wrong-password" ||
+      err.code === "auth/user-not-found"
+    ) {
+      alert("Invalid email or password");
+    } else {
+      alert("Login failed");
     }
+  } finally {
+    setSubmitting(false);
+  }
+}
   });
 
   return (

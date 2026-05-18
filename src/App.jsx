@@ -3,8 +3,11 @@ import '../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js';
 import './App.css';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import Users from './pages/Users.jsx';
+import RankingCategories from './pages/RankingCategories';
 import DashHero from './pages/DashHero.jsx';
 import Home from './pages/Home.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -26,13 +29,15 @@ export default function App() {
   const pathname = location.pathname;
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+  window.scrollTo(0, 0);
+  document.title = "Quiz Master";
+}, [pathname]);
   
 
   return (
     <>
-      {!location.pathname.startsWith("/dashboard") && <Navbar />}
+    <ToastContainer position="top-right" autoClose={2000} />
+      {!pathname.startsWith("/dashboard") && <Navbar />}
 
       <Routes>
       
@@ -43,6 +48,7 @@ export default function App() {
         <Route path="/admin-login" element={<AdminLogin />} />
 
         <Route path="/categories" element={<ProtectedUserRoute><Categories /></ProtectedUserRoute>} />
+        <Route path="/rankings" element={<ProtectedUserRoute><RankingCategories /></ProtectedUserRoute>} />
         <Route path="/quizzes/:category" element={<ProtectedUserRoute><Quizzes /></ProtectedUserRoute>} />
         <Route path="/leaderboard/:category" element={<ProtectedUserRoute><Leaderboard /></ProtectedUserRoute>} />
 

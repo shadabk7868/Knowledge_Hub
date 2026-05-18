@@ -1,8 +1,12 @@
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthProvider";
+import { signOut } from "firebase/auth";
+import { auth } from "../Firebase";
  
 export default function Navbars() {
-    let loggedinUser = localStorage.getItem("userloggedIn")
+  const { currentUser } = useContext(AuthContext);
     let nav = useNavigate()
 
     return (
@@ -19,19 +23,33 @@ export default function Navbars() {
     <div className="collapse navbar-collapse" id="nav">
 
       <div className="navbar-nav gap-3">
-        <NavLink className="nav-link text-light" to="/">Home</NavLink>
-        <NavLink className="nav-link text-light" to="/categories">Quizes</NavLink>
-        <NavLink className="nav-link text-light" to="/leaderboard">Leaderboard</NavLink>
+        <NavLink className={({ isActive }) =>
+  isActive
+    ? "nav-link text-warning fw-bold"
+    : "nav-link text-light"
+} to="/">Home</NavLink>
+        <NavLink className={({ isActive }) =>
+  isActive
+    ? "nav-link text-warning fw-bold"
+    : "nav-link text-light"
+} to="/categories">Quizes</NavLink>
+        <NavLink className={({ isActive }) =>
+  isActive
+    ? "nav-link text-warning fw-bold"
+    : "nav-link text-light"
+} to="/rankings">
+  Leaderboard
+</NavLink>
       </div>
 
       <div className="ms-auto mt-2 mt-lg-0">
-        {loggedinUser ? (
+        {currentUser ? (
           <button
             className="btn btn-outline-light btn-sm"
-            onClick={() => {
-              localStorage.removeItem("userloggedIn");
-              nav("/login");
-            }}
+            onClick={async () => {
+  await signOut(auth);
+  nav("/login", { replace: true });
+}}
           >
             Logout
           </button>

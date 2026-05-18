@@ -42,6 +42,16 @@ export default function ShowQuiz() {
   const updateQuiz = async () => {
     const { category, index, question, options, correctOption } = editData;
 
+    if (
+  !question ||
+  !options.a ||
+  !options.b ||
+  !options.c ||
+  !options.d
+) {
+  alert("All fields are required");
+  return;
+}
     const updated = { ...quizes };
 
     updated[category][index] = {

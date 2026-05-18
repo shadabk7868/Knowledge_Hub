@@ -13,6 +13,14 @@ background: #7fc3e0;
  overflow-x: hidden;
 }
 
+.option-box {
+  transition: all 0.2s ease;
+}
+
+.option-box:hover {
+  border-color: #0d6efd;
+  background-color: #cfdef8 !important;
+}
 /* Card look */
 .app-card {
   border-radius: 12px;
@@ -65,9 +73,4 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-}
-
-.card:hover {
-  transform: scale(1.05);
-  transition: 0.3s;
 }

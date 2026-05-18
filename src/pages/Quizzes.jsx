@@ -1,11 +1,26 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import { useEffect, useState, useRef } from "react";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthProvider";
+
+import {
+  doc,
+  getDoc,
+  addDoc,
+  collection,
+  getDocs,
+  updateDoc,
+  query,
+  where,
+} from "firebase/firestore";
+
 import { db } from "../Firebase";
 
 export default function Quizzes() {
   const navigate = useNavigate();
+  const { currentUser } = useContext(AuthContext);
   const { category } = useParams();
+
 
   const [allQuizes, setAllQuizes] = useState({});
   const [loading, setLoading] = useState(true);
@@ -16,17 +31,25 @@ export default function Quizzes() {
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
 
+  const [timeLeft, setTimeLeft] = useState(15);
+  const timerRef = useRef(null);
+
+  // FETCH QUIZZES
   useEffect(() => {
     const fetchQuizzes = async () => {
-      const ref = doc(db, "appdata", "allQuizes");
-      const snap = await getDoc(ref);
+      try {
+        const ref = doc(db, "appdata", "allQuizes");
+        const snap = await getDoc(ref);
 
-      if (snap.exists()) {
-        const data = snap.data().data || {};
-        setAllQuizes(data);
+        if (snap.exists()) {
+          const data = snap.data().data || {};
+          setAllQuizes(data);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     fetchQuizzes();
@@ -40,9 +63,49 @@ export default function Quizzes() {
     setQuizFinished(false);
   }, [category]);
 
+  useEffect(() => {
+
+    if (quizFinished || showAnswer) return;
+
+    timerRef.current = setInterval(() => {
+
+      setTimeLeft((prev) => {
+
+        if (prev <= 1) {
+
+          clearInterval(timerRef.current);
+
+          setShowAnswer(true);
+
+          return 0;
+        }
+
+        return prev - 1;
+      });
+
+    }, 1000);
+
+    return () => clearInterval(timerRef.current);
+
+  }, [questionIndex, showAnswer, quizFinished]);
+
+  useEffect(() => {
+
+    if (showAnswer && timeLeft === 0) {
+
+      const timeout = setTimeout(() => {
+        nextQuestion();
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+
+  }, [showAnswer, timeLeft]);
+
   const quizList = allQuizes[category] || [];
   const question = quizList[questionIndex];
 
+  // LOADING
   if (loading) {
     return (
       <div className="text-center mt-5">
@@ -52,57 +115,106 @@ export default function Quizzes() {
     );
   }
 
+  // NO QUIZ
   if (!quizList.length) {
     return <h3 className="text-center mt-5">No Quiz Found 😢</h3>;
   }
 
+  // SUBMIT ANSWER
   const submitAnswer = () => {
     setShowAnswer(true);
 
+    let updatedScore = score;
+
     if (selected === question.correctOption) {
-      setScore((prev) => prev + 1);
+      updatedScore = score + 1;
+      setScore(updatedScore);
     }
   };
 
+  // SAVE / UPDATE SCORE
   const saveScore = async (finalScore) => {
-  const currentUser = JSON.parse(localStorage.getItem("user"));
+    try {
 
-  if (!currentUser || !currentUser.email) {
-    alert("User not logged in");
-    return;
-  }
+      if (!currentUser || !currentUser.email) {
+        alert("User not logged in");
+        return;
+      }
 
-  try {
-    await addDoc(collection(db, "leaderboard"), {
-      email: currentUser.email,
-      category: category,
-      score: finalScore,
-      createdAt: new Date(),
-    });
+      const q = query(
+        collection(db, "leaderboard"),
+        where("category", "==", category)
+      );
 
-    console.log("Score saved to Firestore ");
-  } catch (error) {
-    console.error(error);
-    alert("Error saving score");
-  }
-};
+      const snapshot = await getDocs(q);
 
-  const nextQuestion = () => {
+      let oldDocId = null;
+
+      snapshot.forEach((item) => {
+        const data = item.data();
+
+        // same user ka purana score find
+        if (
+          data.email === currentUser.email &&
+          data.category === category
+        ) {
+          oldDocId = item.id;
+        }
+      });
+
+      // UPDATE OLD SCORE
+      if (oldDocId) {
+        await updateDoc(doc(db, "leaderboard", oldDocId), {
+          email: currentUser.email,
+          category,
+          score: finalScore,
+          createdAt: new Date(),
+        });
+
+        console.log("Score updated");
+      }
+
+      // ADD NEW SCORE
+      else {
+        await addDoc(collection(db, "leaderboard"), {
+          email: currentUser.email,
+          category,
+          score: finalScore,
+          createdAt: new Date(),
+        });
+
+        console.log("Score added");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error saving score");
+    }
+  };
+
+  // NEXT QUESTION
+  const nextQuestion = async () => {
     setSelected("");
     setShowAnswer(false);
+    setTimeLeft(15);
 
     if (questionIndex + 1 < quizList.length) {
       setQuestionIndex((prev) => prev + 1);
     } else {
-      saveScore(score);
+      await saveScore(score);
+
       setQuizFinished(true);
     }
   };
 
   return (
-    <div className="container d-flex justify-content-center mt-5">
-      <div className="card shadow p-4" style={{ width: "600px" }}>
-
+    <div className="container d-flex justify-content-center mt-5 mb-5">
+      <div
+        className="card shadow-lg p-4 border-0"
+        style={{
+          width: "600px",
+          borderRadius: "18px",
+        }}
+      >
         <h4 className="fw-bold mb-3 text-center">
           {category} Quiz
         </h4>
@@ -110,12 +222,17 @@ export default function Quizzes() {
         {quizFinished ? (
           <div className="text-center">
             <h3 className="fw-bold">Quiz Completed 🎉</h3>
-            <p className="mt-3">
-              Your Score: <b>{score} / {quizList.length}</b>
+
+            <p className="mt-3 fs-5">
+              Your Score:
+              <b>
+                {" "}
+                {score} / {quizList.length}
+              </b>
             </p>
 
             <button
-              className="btn btn-primary mt-3"
+              className="btn btn-primary mt-3 px-4"
               onClick={() => navigate(`/leaderboard/${category}`)}
             >
               View Leaderboard
@@ -123,39 +240,84 @@ export default function Quizzes() {
           </div>
         ) : (
           <div>
+            <div className="d-flex justify-content-between align-items-center mb-3">
 
-            <h6 className="text-muted mb-3">
-              Question {questionIndex + 1} / {quizList.length}
-            </h6>
+              <h6 className="text-muted m-0">
+                Question {questionIndex + 1} / {quizList.length}
+              </h6>
 
-            <h5 className="fw-bold">{question.question}</h5>
+              <div
+                className={`fw-bold px-3 py-1 rounded ${timeLeft <= 5 ? "bg-danger text-white" : "bg-warning"
+                  }`}
+              >
+                ⏳ {timeLeft}s
+              </div>
+
+            </div>
+
+            <h5 className="fw-bold mb-4">
+              {question.question}
+            </h5>
 
             {/* OPTIONS */}
             <div className="mt-3">
               {["a", "b", "c", "d"].map((key) => (
-                <div key={key} className="form-check mb-2">
+                <div
+                  key={key}
+                  className="form-check mb-3 p-3 rounded option-box"
+                  style={{
+                    cursor: showAnswer ? "default" : "pointer",
+                    backgroundColor:
+                      showAnswer &&
+                        key === question.correctOption
+                        ? "#a9dec6"
+                        : showAnswer &&
+                          key === selected &&
+                          selected !== question.correctOption
+                          ? "#f7d3d6"
+                          : "#f8f9fa",
+                  }}
+                  onClick={() => {
+                    if (!showAnswer) {
+                      setSelected(key);
+                    }
+                  }}
+                >
                   <input
                     className="form-check-input"
                     type="radio"
                     name="option"
                     value={key}
                     checked={selected === key}
-                    disabled={showAnswer }
+                    disabled={showAnswer}
                     onChange={() => setSelected(key)}
                   />
 
-                  <label className="form-check-label">
+                  <label className="form-check-label ms-2">
                     {question.options[key]}
                   </label>
 
-                  {/* SIMPLE TEXT FEEDBACK */}
-                  {showAnswer && key === selected && selected !== question.correctOption && (
-                    <div className="text-danger small">Wrong answer</div>
-                  )}
+                  {/* WRONG */}
+                  {showAnswer &&
+                    key === selected &&
+                    selected !== question.correctOption && (
+                      <div className="text-danger small mt-1">
+                        Wrong answer
+                      </div>
+                    )}
 
-                  {showAnswer && key === question.correctOption && (
-                    <div className="text-success small">Correct answer</div>
-                  )}
+                  {/* CORRECT */}
+                  {showAnswer &&
+                    key === question.correctOption && (
+                      <div className="text-success small mt-1">
+                        Correct answer
+                        {showAnswer && timeLeft === 0 && (
+                          <div className="text-danger fw-bold mt-2">
+                            ⏰ Time's Up!
+                          </div>
+                        )}
+                      </div>
+                    )}
                 </div>
               ))}
             </div>
@@ -163,15 +325,23 @@ export default function Quizzes() {
             {/* BUTTONS */}
             {!showAnswer ? (
               <button
-                className="btn btn-primary mt-4"
+                className="btn btn-primary mt-4 px-4"
                 disabled={!selected}
-                onClick={submitAnswer}
+                onClick={() => {
+                  clearInterval(timerRef.current);
+                  submitAnswer();
+                }}
               >
                 Submit
               </button>
             ) : (
-              <button className="btn btn-success mt-3" onClick={nextQuestion}>
-                Next
+              <button
+                className="btn btn-success mt-4 px-4"
+                onClick={nextQuestion}
+              >
+                {questionIndex + 1 === quizList.length
+                  ? "Finish Quiz"
+                  : "Next"}
               </button>
             )}
           </div>
